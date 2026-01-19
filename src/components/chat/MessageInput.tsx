@@ -1,0 +1,301 @@
+import React, { useState, useRef, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
+import { Image as ImageIcon, X, AlertCircle, Send, Link, RotateCcw } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useImageUpload } from '@/hooks/useImageUpload';
+import { LazyAudioRecorder } from './LazyAudioRecorder';
+import { LazyVideoRecorder } from './LazyVideoRecorder';
+import { ReplyPreview } from './ReplyPreview';
+import { EmojiPicker } from './EmojiPicker';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Message } from '@/lib/supabase';
+interface MessageInputProps {
+  onSendMessage: (content: string, imageData?: string, audioData?: string, audioDuration?: number, replyToId?: string, videoPath?: string, videoDuration?: number, videoThumbnail?: string, viewOnce?: boolean) => void;
+  disabled?: boolean;
+  onStartTyping?: () => void;
+  onStopTyping?: () => void;
+  replyingTo?: Message | null;
+  onCancelReply?: () => void;
+  userId: string;
+}
+export const MessageInput: React.FC<MessageInputProps> = ({
+  onSendMessage,
+  disabled,
+  onStartTyping,
+  onStopTyping,
+  replyingTo,
+  onCancelReply,
+  userId
+}) => {
+  const [message, setMessage] = useState('');
+  const [imageUploadState, imageUploadActions] = useImageUpload();
+  const [isRecording, setIsRecording] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const stopTypingDelayed = useCallback(() => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      if (isTypingRef.current) {
+        console.log('Stopping typing due to inactivity');
+        isTypingRef.current = false;
+        onStopTyping?.();
+      }
+    }, 1000); // Para de digitar após 1 segundo de inatividade
+  }, [onStopTyping]);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim() && !imageUploadState.selectedImage || disabled || imageUploadState.isUploading) return;
+    const messageContent = message.trim() || (imageUploadState.selectedImage ? '📷 Imagem' : '');
+
+    // Handle image upload with the hook
+    if (imageUploadState.selectedImage) {
+      await imageUploadActions.processAndUpload(async imageData => {
+        await onSendMessage(messageContent, imageData, undefined, undefined, replyingTo?.id);
+      });
+    } else {
+      // Send text-only message
+      try {
+        await onSendMessage(messageContent, undefined, undefined, undefined, replyingTo?.id);
+        setMessage('');
+        onCancelReply?.();
+      } catch (error) {
+        console.error('❌ Failed to send text message:', error);
+        alert('Erro ao enviar mensagem. Tente novamente.');
+      }
+    }
+
+    // Clear text input and reply state on success (image is cleared by the hook)
+    if (!imageUploadState.error) {
+      setMessage('');
+      onCancelReply?.();
+    }
+
+    // Clear timeout and stop typing immediately
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    isTypingRef.current = false;
+    onStopTyping?.();
+  };
+  const handleSendAudio = (audioData: string, duration: number) => {
+    onSendMessage("🎤 Áudio", undefined, audioData, duration, replyingTo?.id);
+    onCancelReply?.();
+    setIsRecording(false);
+
+    // Stop typing indicator
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    isTypingRef.current = false;
+    onStopTyping?.();
+  };
+  const handleSendVideo = async (videoPath: string, duration: number, thumbnail: string, viewOnce?: boolean) => {
+    try {
+      await onSendMessage("🎥 Vídeo", undefined, undefined, undefined, replyingTo?.id, videoPath, duration, thumbnail, viewOnce);
+      onCancelReply?.();
+
+      // Stop typing indicator
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      isTypingRef.current = false;
+      onStopTyping?.();
+    } catch (error) {
+      console.error('❌ Failed to send video:', error);
+    }
+  };
+  const handleEmojiSelect = (emoji: string) => {
+    const input = inputRef.current;
+    if (input) {
+      const cursorPosition = input.selectionStart || message.length;
+      const newMessage = message.slice(0, cursorPosition) + emoji + message.slice(cursorPosition);
+      setMessage(newMessage);
+
+      // Set cursor position after the emoji
+      setTimeout(() => {
+        input.focus();
+        input.setSelectionRange(cursorPosition + emoji.length, cursorPosition + emoji.length);
+      }, 0);
+    }
+  };
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    imageUploadActions.selectImage(file);
+
+    // Clear file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+  const removeImage = () => {
+    imageUploadActions.removeImage();
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setMessage(value);
+    if (!disabled) {
+      if (value.length > 0) {
+        // Começou a digitar
+        if (!isTypingRef.current) {
+          console.log('Starting typing');
+          isTypingRef.current = true;
+          onStartTyping?.();
+        }
+        stopTypingDelayed();
+      } else {
+        // Campo vazio, parar de digitar
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+        if (isTypingRef.current) {
+          console.log('Stopping typing - empty field');
+          isTypingRef.current = false;
+          onStopTyping?.();
+        }
+      }
+    }
+  };
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    } else if (!disabled) {
+      // Qualquer tecla pressionada conta como digitação
+      if (!isTypingRef.current && message.length >= 0) {
+        console.log('Key pressed - starting typing');
+        isTypingRef.current = true;
+        onStartTyping?.();
+      }
+      stopTypingDelayed();
+    }
+  };
+  const handleBlur = () => {
+    // Para de digitar quando perde o foco
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    if (isTypingRef.current) {
+      console.log('Stopping typing - blur');
+      isTypingRef.current = false;
+      onStopTyping?.();
+    }
+  };
+
+  const handlePasteLink = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      if (clipboardText.trim()) {
+        // Envia diretamente o link copiado
+        await onSendMessage(clipboardText.trim(), undefined, undefined, undefined, replyingTo?.id);
+        onCancelReply?.();
+        
+        // Clear timeout and stop typing immediately
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+        isTypingRef.current = false;
+        onStopTyping?.();
+      }
+    } catch (error) {
+      console.error('❌ Failed to read clipboard:', error);
+      alert('Erro ao acessar área de transferência. Verifique as permissões do navegador.');
+    }
+  };
+  return <div className="border-t bg-card shrink-0" style={{
+    position: 'relative',
+    zIndex: 10
+  }}>
+      {/* Reply Preview */}
+      {replyingTo && <ReplyPreview message={replyingTo} onCancel={() => onCancelReply?.()} />}
+      
+      {/* Error Alert */}
+      {imageUploadState.error && <div className="p-4 pb-2">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {imageUploadState.error}
+              <Button variant="ghost" size="sm" className="ml-2 h-auto p-0 text-destructive hover:text-destructive" onClick={imageUploadActions.clearError}>
+                Dispensar
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </div>}
+      
+      {/* Image Preview */}
+      {imageUploadState.imagePreview && <div className="p-4 pb-2">
+          <div className="relative inline-block">
+            <img src={imageUploadState.imagePreview} alt="Preview" className="max-w-32 max-h-32 rounded-lg border object-cover" />
+            <Button variant="destructive" size="sm" className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0" onClick={removeImage} disabled={imageUploadState.isUploading}>
+              <X className="w-3 h-3" />
+            </Button>
+            
+            {/* Upload progress indicator */}
+            {imageUploadState.isUploading && (
+              <div className="absolute inset-0 bg-black/60 rounded-lg flex flex-col items-center justify-center p-2 gap-2">
+                <div className="w-full space-y-1">
+                  <div className="flex justify-between text-[10px] text-white">
+                    <span>Enviando...</span>
+                    <span>{Math.round(imageUploadState.uploadProgress)}%</span>
+                  </div>
+                  <Progress value={imageUploadState.uploadProgress} className="h-2 w-full bg-white/20" />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>}
+      
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2 py-1 my-0 px-0">
+        {/* Linha superior apenas com input e botão de envio */}
+        <div className="flex items-center gap-2">
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" disabled={disabled || imageUploadState.isUploading} />
+          
+          <Input ref={inputRef} value={message} onChange={handleInputChange} onKeyDown={handleKeyPress} onBlur={handleBlur} placeholder="Digite sua mensagem..." className="flex-1 h-9 text-xs" disabled={disabled || imageUploadState.isUploading} />
+          
+          {/* Send button - only appears when image is selected */}
+          {imageUploadState.selectedImage && <Button type="submit" size="sm" disabled={disabled || imageUploadState.isUploading} className="shrink-0">
+              <Send className="w-4 h-4" />
+            </Button>}
+        </div>
+        
+        {/* Linha inferior com todos os botões */}
+        <div className="flex items-center justify-center gap-2">
+          {/* Refresh Button - hidden */}
+          {/* {!isRecording && <Button type="button" variant="outline" size="sm" onClick={() => window.location.reload()} disabled={disabled} className="shrink-0 flex flex-col items-center justify-center gap-0.5 h-8 w-8">
+              <RotateCcw className="w-3 h-3 text-orange-500" />
+              <span className="text-[6px] font-bold leading-none text-orange-600">F5</span>
+            </Button>} */}
+
+          {/* HD Button - hidden when recording */}
+          {!isRecording && <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={disabled || imageUploadState.isUploading} className="shrink-0 flex flex-col items-center justify-center gap-0.5 h-8 w-8">
+              <ImageIcon className="w-3 h-3 text-green-500" />
+              <span className="text-[6px] font-bold leading-none text-green-600">HD</span>
+            </Button>}
+          
+          {/* LazyAudioRecorder - always mounted */}
+          <LazyAudioRecorder onSendAudio={handleSendAudio} disabled={disabled} className="shrink-0 h-8 w-8" onRecordingChange={setIsRecording} />
+          
+          {/* Video Button - hidden when recording */}
+          {!isRecording && <LazyVideoRecorder onSendVideo={handleSendVideo} disabled={disabled} userId={userId} className="shrink-0 h-8 w-8" />}
+          
+          {/* Link Button - hidden when recording */}
+          {!isRecording && <Button type="button" variant="outline" size="sm" onClick={handlePasteLink} disabled={disabled} className="shrink-0 flex flex-col items-center justify-center gap-0.5 h-8 w-8">
+              <Link className="w-3 h-3 text-purple-500" />
+              <span className="text-[6px] font-bold leading-none text-purple-600">LINK</span>
+            </Button>}
+          
+          {/* Emoji Button - hidden when recording */}
+          {!isRecording && <EmojiPicker onEmojiSelect={handleEmojiSelect} disabled={disabled} className="h-8 w-8" />}
+        </div>
+      </form>
+    </div>;
+};

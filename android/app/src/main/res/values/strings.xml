@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Flype Bird</string>
+    <string name="title_activity_main">Flype Bird</string>
+    <string name="package_name">com.iasmin.app</string>
+    <string name="custom_url_scheme">com.iasmin.app</string>
+</resources>

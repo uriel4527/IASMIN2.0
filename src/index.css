@@ -1,0 +1,394 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 245 45% 97%;
+    --foreground: 222 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 84% 4.9%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 262 83% 70%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 262 83% 95%;
+    --accent-foreground: 262 83% 25%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 262 83% 58%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+
+    --chat-bubble-sent: 153 52% 20%;
+    --chat-bubble-sent-foreground: 0 0% 100%;
+    --chat-bubble-received: 0 0% 100%;
+    --chat-bubble-received-foreground: 222 84% 4.9%;
+
+    --online: 142 76% 36%;
+    --offline: 215 16% 47%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(262 83% 70%));
+    --gradient-chat: linear-gradient(180deg, hsl(245 45% 97%), hsl(220 14% 96%));
+
+    --shadow-message: 0 1px 3px 0 hsl(0 0% 0% / 0.1);
+    --shadow-glow: 0 0 20px hsl(262 83% 58% / 0.3);
+
+    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 24 9% 10%;
+    --foreground: 0 0% 98%;
+
+    --card: 24 9% 10%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 24 9% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 262 83% 70%;
+
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 262 83% 20%;
+    --accent-foreground: 262 83% 95%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 262 83% 58%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+
+    --chat-bubble-sent: 153 52% 20%;
+    --chat-bubble-sent-foreground: 0 0% 100%;
+    --chat-bubble-received: 240 4% 16%;
+    --chat-bubble-received-foreground: 0 0% 98%;
+
+    --online: 142 76% 36%;
+    --offline: 240 5% 65%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(262 83% 70%));
+    --gradient-chat: linear-gradient(180deg, hsl(24 9% 10%), hsl(240 4% 16%));
+
+    --shadow-message: 0 1px 3px 0 hsl(0 0% 0% / 0.3);
+    --shadow-glow: 0 0 20px hsl(262 83% 58% / 0.4);
+
+    --tech-pattern-bg: radial-gradient(circle at 20px 30px, hsl(220 100% 50% / 0.1) 1px, transparent 1px),
+                     radial-gradient(circle at 40px 70px, hsl(220 100% 60% / 0.08) 1px, transparent 1px),
+                     linear-gradient(135deg, 
+                       hsl(220 100% 15% / 0.3) 0%, 
+                       hsl(220 100% 8% / 0.5) 25%, 
+                       hsl(220 100% 5% / 0.7) 50%, 
+                       hsl(220 100% 8% / 0.5) 75%, 
+                       hsl(220 100% 15% / 0.3) 100%),
+                     url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23004aad' fill-opacity='0.03'%3E%3Cpath d='M20 10h4v4h-4zm0 12h4v4h-4zm12-12h4v4h-4zm0 12h4v4h-4zm-6-6h4v4h-4zm0 12h4v4h-4zm-6-18h4v4h-4zm0 12h4v4h-4zm0 12h4v4h-4zm12-24h4v4h-4zm0 12h4v4h-4zm0 12h4v4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+
+    --sidebar-background: 240 6% 10%;
+    --sidebar-foreground: 240 5% 96%;
+    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 240 5% 96%;
+    --sidebar-border: 240 4% 16%;
+    --sidebar-ring: 262 83% 58%;
+  }
+}
+
+@layer base {
+  html {
+    height: 100vh;
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    height: 100vh;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+
+  #root {
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+
+  * {
+    @apply border-border;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+
+  /* Chrome specific fixes */
+  @supports (-webkit-appearance: none) {
+    html, body, #root {
+      height: 100vh;
+      height: -webkit-fill-available;
+      overflow: hidden;
+    }
+  }
+
+  /* Mobile specific fixes */
+  @media (max-width: 768px) {
+    html, body, #root {
+      height: 100vh;
+      height: -webkit-fill-available;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+    
+    /* Disable pull-to-refresh */
+    body {
+      overscroll-behavior-y: contain;
+    }
+    
+    /* Mobile-first PWA styles */
+    .mobile-header {
+      padding: 0.75rem;
+      min-height: 60px;
+    }
+    
+    .mobile-header h2 {
+      font-size: 0.875rem;
+    }
+    
+    .mobile-header .badge {
+      font-size: 0.75rem;
+      padding: 0.125rem 0.5rem;
+    }
+    
+    /* Better touch targets */
+    button {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* Improved chat bubbles for mobile */
+    .chat-bubble {
+      max-width: 85%;
+      padding: 0.75rem;
+      margin: 0.25rem;
+    }
+    
+    /* Better message input for mobile */
+    .message-input {
+      padding: 0.75rem;
+      gap: 0.5rem;
+    }
+    
+    .message-input textarea {
+      min-height: 40px;
+      max-height: 120px;
+    }
+    
+    /* PWA safe areas */
+    .pwa-safe-top {
+      padding-top: env(safe-area-inset-top);
+    }
+    
+    .pwa-safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .pwa-safe-left {
+      padding-left: env(safe-area-inset-left);
+    }
+    
+    .pwa-safe-right {
+      padding-right: env(safe-area-inset-right);
+    }
+  }
+  
+  /* PWA Display Mode Styles */
+  @media (display-mode: standalone) {
+    body {
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Add status bar spacing for iOS */
+    .pwa-header {
+      padding-top: env(safe-area-inset-top);
+    }
+    
+    /* Better scrolling in PWA mode */
+    .chat-messages {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+  }
+  
+  /* Landscape mobile optimizations */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .mobile-header {
+      min-height: 50px;
+      padding: 0.5rem 0.75rem;
+    }
+    
+    .message-input {
+      padding: 0.5rem 0.75rem;
+    }
+    
+    .message-input textarea {
+      min-height: 36px;
+      max-height: 80px;
+    }
+  }
+}
+
+@layer utilities {
+  .h-screen-fixed {
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+  
+  .pwa-gradient {
+    background: var(--gradient-primary);
+  }
+  
+  .pwa-shadow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .pwa-transition {
+    transition: var(--transition-smooth);
+  }
+  
+  /* PWA specific utilities */
+  .install-prompt-enter {
+    animation: slideInUp 0.3s ease-out;
+  }
+  
+  .install-prompt-exit {
+    animation: slideOutDown 0.3s ease-in;
+  }
+  
+  @keyframes slideInUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideOutDown {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+  }
+  
+  /* Chat bubble animations */
+  .message-appear {
+    animation: messageAppear 0.3s ease-out;
+  }
+  
+  @keyframes messageAppear {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+      scale: 0.95;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+      scale: 1;
+    }
+  }
+  
+  /* Typing indicator animation */
+  .typing-dots {
+    animation: typingDots 1.4s infinite;
+  }
+  
+  @keyframes typingDots {
+    0%, 60%, 100% {
+      transform: translateY(0);
+    }
+    30% {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Chat page tech background */
+  .tech-pattern-bg {
+    background: var(--tech-pattern-bg);
+    background-size: 60px 60px, 80px 80px, 100% 100%, 60px 60px;
+    background-position: 0 0, 30px 40px, 0 0, 0 0;
+  }
+
+  /* Utilities for wrapping long unbroken strings */
+  .overflow-wrap-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
