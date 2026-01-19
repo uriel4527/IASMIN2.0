@@ -1,9 +1,25 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Mock client para evitar crashes quando as variáveis de ambiente não estiverem configuradas
+const createMockClient = () => {
+  console.warn('⚠️ Supabase credentials missing. Using mock client.');
+  return new Proxy(() => {}, {
+    get: (target, prop) => {
+      if (prop === 'then') {
+        return (resolve: any) => resolve({ data: null, error: null });
+      }
+      return createMockClient();
+    },
+    apply: () => createMockClient()
+  }) as any;
+};
+
+export const supabase = (supabaseUrl && supabaseKey) 
+  ? createClient(supabaseUrl, supabaseKey) 
+  : createMockClient();
 
 // Database types
 export interface User {
