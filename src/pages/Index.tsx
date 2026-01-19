@@ -11,17 +11,17 @@ const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Modo desenvolvedor: redirecionar automaticamente para /chat (PRIORIDADE MÁXIMA)
-  useEffect(() => {
-    if (localStorage.getItem('developer_mode') === 'enabled') {
-      navigate('/chat', { replace: true });
-    }
-  }, [navigate]);
+  // Modo desenvolvedor: redirecionar automaticamente para /chat (REMOVIDO A PEDIDO DO USUÁRIO)
+  // useEffect(() => {
+  //   if (localStorage.getItem('developer_mode') === 'enabled') {
+  //     navigate('/chat', { replace: true });
+  //   }
+  // }, [navigate]);
 
   // Se modo desenvolvedor está ativo, não renderizar nada (redirecionamento já ocorreu)
-  if (localStorage.getItem('developer_mode') === 'enabled') {
-    return null;
-  }
+  // if (localStorage.getItem('developer_mode') === 'enabled') {
+  //   return null;
+  // }
 
   if (loading) {
     return (

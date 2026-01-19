@@ -88,13 +88,11 @@ const App = () => (
                 <Route 
                   path="/" 
                   element={
-                    <DeveloperModeRedirect redirectTo="/chat">
-                      <RouteWrapper 
-                        element={<OptimizedFlyboard />} 
-                        needsAuth={false}
-                        needsPWA={false}
-                      />
-                    </DeveloperModeRedirect>
+                    <RouteWrapper 
+                      element={<OptimizedFlyboard />} 
+                      needsAuth={false}
+                      needsPWA={false}
+                    />
                   } 
                 />
                 
