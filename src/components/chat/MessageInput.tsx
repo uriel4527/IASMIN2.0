@@ -1,8 +1,8 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Image as ImageIcon, X, AlertCircle, Send, Link, RotateCcw } from 'lucide-react';
+import { Image as ImageIcon, X, AlertCircle, Send, Link, RotateCcw, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { LazyAudioRecorder } from './LazyAudioRecorder';
@@ -36,6 +36,18 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   const isTypingRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const STORAGE_KEY = `chat_draft_${userId}`;
+
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+
+  // Load draft from localStorage on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(STORAGE_KEY);
+    if (savedDraft) {
+      setMessage(savedDraft);
+    }
+  }, [STORAGE_KEY]);
+
   const stopTypingDelayed = useCallback(() => {
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
@@ -63,16 +75,19 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       try {
         await onSendMessage(messageContent, undefined, undefined, undefined, replyingTo?.id);
         setMessage('');
+        localStorage.removeItem(STORAGE_KEY);
         onCancelReply?.();
       } catch (error) {
         console.error('❌ Failed to send text message:', error);
         alert('Erro ao enviar mensagem. Tente novamente.');
+        return;
       }
     }
 
     // Clear text input and reply state on success (image is cleared by the hook)
-    if (!imageUploadState.error) {
+    if (!imageUploadState.error && imageUploadState.selectedImage) {
       setMessage('');
+      localStorage.removeItem(STORAGE_KEY);
       onCancelReply?.();
     }
 
@@ -116,6 +131,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       const cursorPosition = input.selectionStart || message.length;
       const newMessage = message.slice(0, cursorPosition) + emoji + message.slice(cursorPosition);
       setMessage(newMessage);
+      localStorage.setItem(STORAGE_KEY, newMessage);
 
       // Set cursor position after the emoji
       setTimeout(() => {
@@ -143,6 +159,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setMessage(value);
+
+    // Save draft to localStorage
+    if (value) {
+      localStorage.setItem(STORAGE_KEY, value);
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
     if (!disabled) {
       if (value.length > 0) {
         // Começou a digitar
@@ -211,6 +235,64 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       alert('Erro ao acessar área de transferência. Verifique as permissões do navegador.');
     }
   };
+  const handleSendLocation = async () => {
+    if (isGettingLocation) return;
+    
+    setIsGettingLocation(true);
+    
+    if (!navigator.geolocation) {
+      alert("Seu navegador não suporta geolocalização.");
+      setIsGettingLocation(false);
+      return;
+    }
+
+    try {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+          
+          onSendMessage(googleMapsLink, undefined, undefined, undefined, replyingTo?.id);
+          onCancelReply?.();
+          setIsGettingLocation(false);
+          
+          // Clear timeout and stop typing immediately
+          if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+          }
+          isTypingRef.current = false;
+          onStopTyping?.();
+        },
+        (error) => {
+          console.error("Erro ao obter localização:", error);
+          let errorMessage = "Erro ao obter localização.";
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = "Permissão de localização negada. Por favor, permita o acesso à localização nas configurações do seu navegador.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = "Informações de localização indisponíveis.";
+              break;
+            case error.TIMEOUT:
+              errorMessage = "Tempo esgotado ao tentar obter localização.";
+              break;
+          }
+          alert(errorMessage);
+          setIsGettingLocation(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    } catch (error) {
+      console.error("Erro inesperado ao obter localização:", error);
+      alert("Ocorreu um erro inesperado ao tentar obter sua localização.");
+      setIsGettingLocation(false);
+    }
+  };
+
   return <div className="border-t bg-card shrink-0" style={{
     position: 'relative',
     zIndex: 10
@@ -295,6 +377,16 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           
           {/* Emoji Button - hidden when recording */}
           {!isRecording && <EmojiPicker onEmojiSelect={handleEmojiSelect} disabled={disabled} className="h-8 w-8" />}
+
+          {/* Location Button - hidden when recording */}
+          {!isRecording && <Button type="button" variant="outline" size="sm" onClick={handleSendLocation} disabled={disabled || isGettingLocation} className="shrink-0 flex flex-col items-center justify-center gap-0.5 h-8 w-8">
+              {isGettingLocation ? (
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-500" />
+              ) : (
+                <MapPin className="w-3 h-3 text-red-500" />
+              )}
+              <span className="text-[6px] font-bold leading-none text-red-600">GPS</span>
+            </Button>}
         </div>
       </form>
     </div>;
