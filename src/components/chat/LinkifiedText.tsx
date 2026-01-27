@@ -4,6 +4,7 @@ import { useNativeLinkHandler } from '@/hooks/useNativeLinkHandler';
 import { YouTubePlayer } from './YouTubePlayer';
 import { TikTokPlayer } from './TikTokPlayer';
 import { GenericVideoPlayer } from './GenericVideoPlayer';
+import { GoogleMapsPreview } from './GoogleMapsPreview';
 
 interface LinkifiedTextProps {
   text: string;
@@ -38,6 +39,7 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, className })
     const youtubeId = extractYouTubeVideoId(url);
     const tiktokId = extractTikTokVideoId(url);
     const isVideo = isVideoUrl(url);
+    const isGoogleMaps = url.includes('google.com/maps') || url.includes('maps.google.com') || url.includes('goo.gl/maps');
     
     // Add text before the URL
     if (start > lastIndex) {
@@ -66,6 +68,10 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, className })
     } else if (isVideo) {
       elements.push(
         <GenericVideoPlayer key={`video-${index}`} src={url} />
+      );
+    } else if (isGoogleMaps) {
+      elements.push(
+        <GoogleMapsPreview key={`maps-${index}`} url={url} />
       );
     } else {
       elements.push(

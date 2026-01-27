@@ -603,25 +603,25 @@ export const WebSocketChatInterface: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 h-10">
+      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 h-8">
         <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+            <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
             {ping !== null && isConnected && (
-                <span className="text-[10px] text-muted-foreground font-mono">{ping}ms</span>
+                <span className="text-[9px] text-muted-foreground font-mono">{ping}ms</span>
             )}
             {Array.from(otherUsers.values())[0] && (
-                <div className={`w-2 h-2 rounded-full ${Array.from(otherUsers.values())[0].is_online ? 'bg-green-500' : 'bg-zinc-400'}`} />
+                <div className={`w-1.5 h-1.5 rounded-full ${Array.from(otherUsers.values())[0].is_online ? 'bg-green-500' : 'bg-zinc-400'}`} />
             )}
-            <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm text-foreground">{user.username}</span>
+            <div className="flex items-center gap-1.5">
+                <span className="font-semibold text-xs text-foreground">{user.username}</span>
                 {typingUsers.size > 0 ? (
-                    <span className="text-xs text-primary animate-pulse flex items-center gap-1">
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                        {Array.from(typingUsers).join(', ')} está digitando...
+                    <span className="text-[10px] text-primary animate-pulse flex items-center gap-1">
+                        <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                        {Array.from(typingUsers).join(', ')} digitando...
                     </span>
                 ) : (
                     Array.from(otherUsers.values())[0] && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-[10px] text-muted-foreground">
                             • {Array.from(otherUsers.values())[0].is_online 
                                 ? 'Online' 
                                 : timeAgo}
@@ -630,29 +630,29 @@ export const WebSocketChatInterface: React.FC = () => {
                 )}
             </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
             <Button
                variant="ghost"
                size="icon"
                onClick={sendGlobalPush}
-               className="relative h-8 w-8"
+               className="relative h-6 w-6"
                title={pushSending ? 'Enviando...' : 'Enviar notificação global'}
              >
                {pushSending ? (
-                 <Bell className="h-4 w-4 text-pink-500 animate-pulse" />
+                 <Bell className="h-3 w-3 text-pink-500 animate-pulse" />
                ) : (
-                 <Bell className="h-4 w-4 text-pink-500" />
+                 <Bell className="h-3 w-3 text-pink-500" />
                )}
              </Button>
              {pushSendStats && (
-                <span className="text-[10px] text-muted-foreground">Enviadas: {pushSendStats.sent} de {pushSendStats.total}</span>
+                <span className="text-[9px] text-muted-foreground">Enviadas: {pushSendStats.sent}/{pushSendStats.total}</span>
              )}
-             {!isConnected && <WifiOff className="text-destructive w-5 h-5" />}
+             {!isConnected && <WifiOff className="text-destructive w-4 h-4" />}
         </div>
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-4 mt-10" ref={scrollAreaRef}>
+      <ScrollArea className="flex-1 p-2 mt-8" ref={scrollAreaRef}>
         <div className="flex flex-col gap-4 min-h-0">
           {messages.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground min-h-[200px]">
@@ -680,7 +680,7 @@ export const WebSocketChatInterface: React.FC = () => {
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="p-2 border-t bg-background">
+      <div className="bg-background">
         <MessageInput 
             onSendMessage={handleSendMessage}
             disabled={!isConnected}
@@ -689,6 +689,12 @@ export const WebSocketChatInterface: React.FC = () => {
             onStopTyping={handleStopTyping}
             replyingTo={replyingTo}
             onCancelReply={handleCancelReply}
+            onActionToggle={() => {
+              // Scroll to bottom after a small delay to allow transition to start/finish
+              setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+              }, 100);
+            }}
         />
       </div>
     </div>

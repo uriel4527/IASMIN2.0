@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Image as ImageIcon, X, AlertCircle, Send, Link, RotateCcw, MapPin } from 'lucide-react';
+import { Image as ImageIcon, X, AlertCircle, Send, Link, RotateCcw, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { LazyAudioRecorder } from './LazyAudioRecorder';
@@ -19,6 +19,7 @@ interface MessageInputProps {
   replyingTo?: Message | null;
   onCancelReply?: () => void;
   userId: string;
+  onActionToggle?: () => void;
 }
 export const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage,
@@ -27,7 +28,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   onStopTyping,
   replyingTo,
   onCancelReply,
-  userId
+  userId,
+  onActionToggle
 }) => {
   const [message, setMessage] = useState('');
   const [imageUploadState, imageUploadActions] = useImageUpload();
@@ -39,6 +41,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   const STORAGE_KEY = `chat_draft_${userId}`;
 
   const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+
+  // Auto-expand actions when recording
+  useEffect(() => {
+    if (isRecording) {
+      setShowActions(true);
+    }
+  }, [isRecording]);
 
   // Load draft from localStorage on mount
   useEffect(() => {
@@ -293,7 +303,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     }
   };
 
-  return <div className="border-t bg-card shrink-0" style={{
+  return <div className="bg-card shrink-0" style={{
     position: 'relative',
     zIndex: 10
   }}>
@@ -336,57 +346,78 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           </div>
         </div>}
       
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2 py-1 my-0 px-0">
-        {/* Linha superior apenas com input e botão de envio */}
-        <div className="flex items-center gap-2">
+      <form onSubmit={handleSubmit} className="flex flex-col py-0 my-0 px-0">
+        <div className="flex items-center gap-0">
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" disabled={disabled || imageUploadState.isUploading} />
           
-          <Input ref={inputRef} value={message} onChange={handleInputChange} onKeyDown={handleKeyPress} onBlur={handleBlur} placeholder="Digite sua mensagem..." className="flex-1 h-9 text-xs" disabled={disabled || imageUploadState.isUploading} />
+          <Input 
+            ref={inputRef} 
+            value={message} 
+            onChange={handleInputChange} 
+            onKeyDown={handleKeyPress} 
+            onBlur={handleBlur} 
+            placeholder="Digite sua mensagem..." 
+            className="flex-1 h-7 text-xs border-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-2 bg-transparent shadow-none" 
+            disabled={disabled || imageUploadState.isUploading} 
+          />
+
+          {/* Toggle Button */}
+          {!isRecording && (
+            <Button 
+              type="button" 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                setShowActions(!showActions);
+                onActionToggle?.();
+              }} 
+              className="shrink-0 h-7 w-7 p-0 hover:bg-transparent"
+            >
+              {showActions ? <ChevronRight className="w-4 h-4 text-muted-foreground rotate-90" /> : <ChevronLeft className="w-4 h-4 text-muted-foreground -rotate-90" />}
+            </Button>
+          )}
           
           {/* Send button - only appears when image is selected */}
-          {imageUploadState.selectedImage && <Button type="submit" size="sm" disabled={disabled || imageUploadState.isUploading} className="shrink-0">
-              <Send className="w-4 h-4" />
+          {imageUploadState.selectedImage && <Button type="submit" size="sm" disabled={disabled || imageUploadState.isUploading} className="shrink-0 h-7 w-7 p-0">
+              <Send className="w-3 h-3" />
             </Button>}
         </div>
-        
-        {/* Linha inferior com todos os botões */}
-        <div className="flex items-center justify-center gap-2">
-          {/* Refresh Button - hidden */}
-          {/* {!isRecording && <Button type="button" variant="outline" size="sm" onClick={() => window.location.reload()} disabled={disabled} className="shrink-0 flex flex-col items-center justify-center gap-0.5 h-8 w-8">
-              <RotateCcw className="w-3 h-3 text-orange-500" />
-              <span className="text-[6px] font-bold leading-none text-orange-600">F5</span>
-            </Button>} */}
 
-          {/* HD Button - hidden when recording */}
-          {!isRecording && <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={disabled || imageUploadState.isUploading} className="shrink-0 flex flex-col items-center justify-center gap-0.5 h-8 w-8">
-              <ImageIcon className="w-3 h-3 text-green-500" />
-              <span className="text-[6px] font-bold leading-none text-green-600">HD</span>
-            </Button>}
-          
-          {/* LazyAudioRecorder - always mounted */}
-          <LazyAudioRecorder onSendAudio={handleSendAudio} disabled={disabled} className="shrink-0 h-8 w-8" onRecordingChange={setIsRecording} />
-          
-          {/* Video Button - hidden when recording */}
-          {!isRecording && <LazyVideoRecorder onSendVideo={handleSendVideo} disabled={disabled} userId={userId} className="shrink-0 h-8 w-8" />}
-          
-          {/* Link Button - hidden when recording */}
-          {!isRecording && <Button type="button" variant="outline" size="sm" onClick={handlePasteLink} disabled={disabled} className="shrink-0 flex flex-col items-center justify-center gap-0.5 h-8 w-8">
-              <Link className="w-3 h-3 text-purple-500" />
-              <span className="text-[6px] font-bold leading-none text-purple-600">LINK</span>
-            </Button>}
-          
-          {/* Emoji Button - hidden when recording */}
-          {!isRecording && <EmojiPicker onEmojiSelect={handleEmojiSelect} disabled={disabled} className="h-8 w-8" />}
+        {/* Action Buttons - Expandable Row */}
+        <div className={cn(
+          "flex items-center justify-center gap-2 transition-all duration-300 overflow-hidden",
+          showActions ? "mt-2 max-h-12 opacity-100" : "max-h-0 opacity-0"
+        )}>
+            {/* HD Button - hidden when recording */}
+            {!isRecording && <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={disabled || imageUploadState.isUploading} className="shrink-0 flex flex-col items-center justify-center gap-0.5 h-8 w-8">
+                <ImageIcon className="w-3 h-3 text-green-500" />
+                <span className="text-[6px] font-bold leading-none text-green-600">HD</span>
+              </Button>}
+            
+            {/* LazyAudioRecorder - always mounted */}
+            <LazyAudioRecorder onSendAudio={handleSendAudio} disabled={disabled} className="shrink-0 h-8 w-8" onRecordingChange={setIsRecording} />
+            
+            {/* Video Button - hidden when recording */}
+            {!isRecording && <LazyVideoRecorder onSendVideo={handleSendVideo} disabled={disabled} userId={userId} className="shrink-0 h-8 w-8" />}
+            
+            {/* Link Button - hidden when recording */}
+            {!isRecording && <Button type="button" variant="outline" size="sm" onClick={handlePasteLink} disabled={disabled} className="shrink-0 flex flex-col items-center justify-center gap-0.5 h-8 w-8">
+                <Link className="w-3 h-3 text-purple-500" />
+                <span className="text-[6px] font-bold leading-none text-purple-600">LINK</span>
+              </Button>}
+            
+            {/* Emoji Button - hidden when recording */}
+            {!isRecording && <EmojiPicker onEmojiSelect={handleEmojiSelect} disabled={disabled} className="h-8 w-8" />}
 
-          {/* Location Button - hidden when recording */}
-          {!isRecording && <Button type="button" variant="outline" size="sm" onClick={handleSendLocation} disabled={disabled || isGettingLocation} className="shrink-0 flex flex-col items-center justify-center gap-0.5 h-8 w-8">
-              {isGettingLocation ? (
-                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-500" />
-              ) : (
-                <MapPin className="w-3 h-3 text-red-500" />
-              )}
-              <span className="text-[6px] font-bold leading-none text-red-600">GPS</span>
-            </Button>}
+            {/* Location Button - hidden when recording */}
+            {!isRecording && <Button type="button" variant="outline" size="sm" onClick={handleSendLocation} disabled={disabled || isGettingLocation} className="shrink-0 flex flex-col items-center justify-center gap-0.5 h-8 w-8">
+                {isGettingLocation ? (
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-500" />
+                ) : (
+                  <MapPin className="w-3 h-3 text-red-500" />
+                )}
+                <span className="text-[6px] font-bold leading-none text-red-600">GPS</span>
+              </Button>}
         </div>
       </form>
     </div>;
