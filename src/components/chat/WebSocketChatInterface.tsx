@@ -27,6 +27,7 @@ export const WebSocketChatInterface: React.FC = () => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLElement | null>(null);
   const lastMessageIdRef = useRef<string | null>(null);
+  const shouldScrollToBottomRef = useRef(false);
   const processedReadIds = useRef<Set<string>>(new Set());
   const [isVisible, setIsVisible] = useState(document.visibilityState === 'visible');
 
@@ -319,7 +320,7 @@ export const WebSocketChatInterface: React.FC = () => {
     return () => clearInterval(interval);
   }, [isConnected, serverSupportsPing]);
 
-  // Auto-scroll logic (updated to handle history loading)
+  // Auto-scroll logic (updated to handle history loading and dynamic content)
   useEffect(() => {
     if (messages.length === 0) return;
     const lastMsg = messages[messages.length - 1];
@@ -327,12 +328,13 @@ export const WebSocketChatInterface: React.FC = () => {
     // Only scroll if the last message is different (new message arrived or sent)
     // This prevents scrolling to bottom when loading old history (prepending)
     if (lastMessageIdRef.current !== lastMsg.id) {
+        shouldScrollToBottomRef.current = true;
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         lastMessageIdRef.current = lastMsg.id;
     }
   }, [messages]);
 
-  // Infinite Scroll Handler
+  // Infinite Scroll Handler & Resize Observer for Auto-Scroll
   useEffect(() => {
     // Find the viewport element inside ScrollArea (Radix UI structure)
     const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
@@ -354,10 +356,38 @@ export const WebSocketChatInterface: React.FC = () => {
                 }));
             }
         }
+
+        // Check if user scrolled away from bottom
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+        
+        // If user scrolls up significantly (> 100px), disable auto-scroll
+        if (distanceFromBottom > 100) {
+            shouldScrollToBottomRef.current = false;
+        } else {
+             // If user manually scrolls to bottom, re-enable auto-scroll
+             shouldScrollToBottomRef.current = true;
+        }
     };
 
+    const resizeObserver = new ResizeObserver(() => {
+        if (shouldScrollToBottomRef.current) {
+             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+
     scrollContainer.addEventListener('scroll', handleScroll);
-    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    // Observe the content div (first child) or the viewport itself if no child
+    if (scrollContainer.firstElementChild) {
+        resizeObserver.observe(scrollContainer.firstElementChild);
+    } else {
+        resizeObserver.observe(scrollContainer);
+    }
+
+    return () => {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+        resizeObserver.disconnect();
+    };
   }, [messages, isLoadingMore, hasMoreMessages]);
 
   // Mark unread messages as read
