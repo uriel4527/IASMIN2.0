@@ -32,6 +32,35 @@ const OptimizedFlyboard = memo(() => {
   // Clear any previous chat access
   React.useEffect(() => {
     sessionStorage.removeItem('chatAccess');
+    
+    // Preload Chat2 and WebSocket connection if user is logged in
+    const storedUser = localStorage.getItem('chatapp_user');
+    if (storedUser) {
+      try {
+        // 1. Preload the Chat2 module
+        import('@/pages/Chat2');
+        
+        // 2. Pre-warm WebSocket connection
+        // We use a headless connection to start the handshake
+        const wsUrl = 'wss://iasmin.duckdns.org';
+        const ws = new WebSocket(wsUrl);
+        
+        ws.onopen = () => {
+          console.log('⚡ WebSocket pre-warmed');
+          ws.close(); // Close immediately as we just want to warm up the SSL handshake/DNS
+        };
+        
+        // Also preload critical assets for chat
+        const preloadLink = document.createElement('link');
+        preloadLink.rel = 'prefetch';
+        preloadLink.href = '/assets/chat-bg.png'; // Assuming there's a background
+        document.head.appendChild(preloadLink);
+        
+      } catch (e) {
+        // Ignore preload errors
+        console.log('Preload skipped');
+      }
+    }
   }, []);
 
   const handleSecretActivate = React.useCallback(() => {

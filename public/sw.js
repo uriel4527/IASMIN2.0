@@ -37,20 +37,41 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle navigation/document requests: network-first, fallback to cached index
+  // Handle navigation/document requests: Stale-While-Revalidate for instant load
   if (request.destination === 'document') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/'))
+      caches.match(request).then((cachedResponse) => {
+        const fetchPromise = fetch(request)
+          .then((networkResponse) => {
+            // Update cache in background
+            if (networkResponse.status === 200) {
+              const responseClone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(request, responseClone);
+              });
+            }
+            return networkResponse;
+          })
+          .catch(() => {
+            // If offline and no cache, fallback to root (SPA support)
+            return caches.match('/');
+          });
+        
+        // Return cached response immediately if available, otherwise wait for network
+        return cachedResponse || fetchPromise;
+      })
     );
     return;
   }
 
-  // Runtime cache for static assets (JS/CSS) to prevent white screens offline
+  // Runtime cache for static assets (JS/CSS/Images/Fonts)
   const isStaticAsset = (
     url.origin === self.location.origin && (
       url.pathname.startsWith('/assets/') ||
       request.destination === 'script' ||
-      request.destination === 'style'
+      request.destination === 'style' ||
+      request.destination === 'image' || 
+      request.destination === 'font'
     )
   );
 
