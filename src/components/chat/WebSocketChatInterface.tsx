@@ -329,7 +329,15 @@ export const WebSocketChatInterface: React.FC = () => {
     // This prevents scrolling to bottom when loading old history (prepending)
     if (lastMessageIdRef.current !== lastMsg.id) {
         shouldScrollToBottomRef.current = true;
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        
+        // Force scroll with a small timeout to allow layout updates
+        setTimeout(() => {
+             const scrollContainer = scrollViewportRef.current;
+             if (scrollContainer) {
+                 scrollContainer.scrollTop = scrollContainer.scrollHeight;
+             }
+        }, 50);
+
         lastMessageIdRef.current = lastMsg.id;
     }
   }, [messages]);
@@ -372,7 +380,8 @@ export const WebSocketChatInterface: React.FC = () => {
 
     const resizeObserver = new ResizeObserver(() => {
         if (shouldScrollToBottomRef.current) {
-             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+             // Force scroll to exact bottom
+             scrollContainer.scrollTop = scrollContainer.scrollHeight;
         }
     });
 
