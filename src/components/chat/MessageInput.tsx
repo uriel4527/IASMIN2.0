@@ -359,6 +359,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             placeholder="Digite sua mensagem..." 
             className="flex-1 h-7 text-xs border-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-2 bg-transparent shadow-none" 
             disabled={disabled || imageUploadState.isUploading} 
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck="false"
+            name="chat_message_field_no_autofill"
           />
 
           {/* Toggle Button */}
