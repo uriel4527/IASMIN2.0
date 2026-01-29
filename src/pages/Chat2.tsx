@@ -103,7 +103,7 @@ const Chat2 = () => {
 
   return (
     <div className="tech-pattern-bg fixed inset-0 overflow-hidden">
-      <WebSocketChatInterface />
+      <WebSocketChatInterface currentUser={user} />
     </div>
   );
 };

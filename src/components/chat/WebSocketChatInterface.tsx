@@ -7,9 +7,44 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, WifiOff, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 
-export const WebSocketChatInterface: React.FC = () => {
+interface WebSocketChatInterfaceProps {
+  currentUser?: User | null;
+}
+
+export const WebSocketChatInterface: React.FC<WebSocketChatInterfaceProps> = ({ currentUser }) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+  // Initialize user immediately from prop if available, otherwise try localStorage synchronously
+  const [user, setUser] = useState<User | null>(() => {
+    if (currentUser) return currentUser;
+    try {
+      const storedUser = localStorage.getItem('chatapp_user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        // Ensure it has at least the basic fields
+        if (parsedUser && (parsedUser.id || parsedUser.username)) {
+             return {
+                 id: parsedUser.id || 'unknown-id',
+                 username: parsedUser.username || 'Guest',
+                 email: parsedUser.email || '',
+                 created_at: parsedUser.created_at || new Date().toISOString(),
+                 last_seen: new Date().toISOString(),
+                 is_online: true,
+                 avatar_url: parsedUser.avatar_url
+             } as User;
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing chatapp_user:', error);
+    }
+    return null;
+  });
+
+  // Sync with prop if it changes
+  useEffect(() => {
+    if (currentUser) {
+      setUser(currentUser);
+    }
+  }, [currentUser]);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
@@ -43,6 +78,8 @@ export const WebSocketChatInterface: React.FC = () => {
 
   // Load user from localStorage
   useEffect(() => {
+    if (currentUser) return; // Skip if provided via prop
+
     const loadUser = () => {
       try {
         const storedUser = localStorage.getItem('chatapp_user');
