@@ -4,8 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
     <style>
-      html, body, #root { height: 100vh; overflow: hidden; position: fixed; width: 100%; }
-      body { overscroll-behavior: none; touch-action: manipulation; }
+      /* Ensure full viewport height including virtual keyboard adjustments */
+      html, body, #root { 
+        height: 100%; 
+        min-height: 100%;
+        width: 100%; 
+        overflow: hidden; 
+        position: fixed; /* Prevents scroll bounce */
+      }
+      
+      /* Only allow scrolling on specific elements that need it */
+      body { 
+        overscroll-behavior: none; 
+        touch-action: manipulation; 
+        -webkit-tap-highlight-color: transparent;
+      }
     </style>
     <title>Fly Bird</title>
     <meta name="description" content="Fly Game">

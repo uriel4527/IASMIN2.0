@@ -66,6 +66,30 @@ export const WebSocketChatInterface: React.FC<WebSocketChatInterfaceProps> = ({ 
   const processedReadIds = useRef<Set<string>>(new Set());
   const [isVisible, setIsVisible] = useState(document.visibilityState === 'visible');
 
+  // Handle visual viewport resizing (virtual keyboard)
+  useEffect(() => {
+    if (!window.visualViewport) return;
+
+    const handleResize = () => {
+      // Quando o teclado abre (viewport diminui), ajustamos o scroll
+      if (scrollViewportRef.current) {
+        // Rola para o final
+        setTimeout(() => {
+          scrollViewportRef.current?.scrollTo({
+            top: scrollViewportRef.current.scrollHeight,
+            behavior: 'smooth'
+          });
+        }, 100);
+      }
+    };
+
+    window.visualViewport.addEventListener('resize', handleResize);
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   // Handle visibility change
   useEffect(() => {
     const handleVisibilityChange = () => {
