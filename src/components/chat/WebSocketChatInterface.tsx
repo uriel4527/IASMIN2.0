@@ -72,11 +72,13 @@ export const WebSocketChatInterface: React.FC<WebSocketChatInterfaceProps> = ({ 
 
     const handleResize = () => {
       // Quando o teclado abre (viewport diminui), ajustamos o scroll
-      if (scrollViewportRef.current) {
+      // Usamos scrollAreaRef.current que é o container com scroll (devido ao overflowY: auto no Root do componente ScrollArea)
+      const scrollContainer = scrollAreaRef.current;
+      if (scrollContainer) {
         // Rola para o final
         setTimeout(() => {
-          scrollViewportRef.current?.scrollTo({
-            top: scrollViewportRef.current.scrollHeight,
+          scrollContainer.scrollTo({
+            top: scrollContainer.scrollHeight,
             behavior: 'smooth'
           });
         }, 100);
@@ -231,7 +233,9 @@ export const WebSocketChatInterface: React.FC<WebSocketChatInterfaceProps> = ({ 
                 if (Array.isArray(data.users)) {
                     data.users.forEach((u: any) => {
                         if (u.id !== user.id) {
-                            newUsers.set(u.id, u);
+                            // Ensure is_online is correctly set based on potential 'status' field or existing 'is_online'
+                            const isOnline = u.is_online === true || u.status === 'online';
+                            newUsers.set(u.id, { ...u, is_online: isOnline });
                         }
                     });
                 }

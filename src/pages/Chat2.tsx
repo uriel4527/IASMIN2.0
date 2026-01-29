@@ -95,14 +95,14 @@ const Chat2 = () => {
 
   if (!user) {
     return (
-      <div className="h-[100dvh] flex items-center justify-center tech-pattern-bg overflow-hidden">
+      <div className="h-full flex items-center justify-center tech-pattern-bg overflow-hidden">
         <SimpleLoginForm />
       </div>
     );
   }
 
   return (
-    <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
+    <div className="h-full bg-background flex flex-col overflow-hidden">
       <WebSocketChatInterface currentUser={user} />
     </div>
   );
