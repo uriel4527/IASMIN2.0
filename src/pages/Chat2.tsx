@@ -102,25 +102,31 @@ const Chat2 = () => {
     const handleResize = () => {
       // Use visualViewport height to ensure keyboard doesn't cover content
       setViewportHeight(`${window.visualViewport.height}px`);
+      // Ensure the page is scrolled to top to prevent layout shift
+      window.scrollTo(0, 0);
     };
 
     window.visualViewport.addEventListener('resize', handleResize);
+    window.visualViewport.addEventListener('scroll', handleResize);
     // Initial set
     handleResize();
 
-    return () => window.visualViewport.removeEventListener('resize', handleResize);
+    return () => {
+      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('scroll', handleResize);
+    };
   }, []);
 
   if (!user) {
     return (
-      <div className="h-full flex items-center justify-center tech-pattern-bg overflow-hidden" style={{ height: viewportHeight }}>
+      <div className="fixed top-0 left-0 w-full flex items-center justify-center tech-pattern-bg overflow-hidden" style={{ height: viewportHeight }}>
         <SimpleLoginForm />
       </div>
     );
   }
 
   return (
-    <div className="bg-background flex flex-col overflow-hidden" style={{ height: viewportHeight }}>
+    <div className="fixed top-0 left-0 w-full bg-background flex flex-col overflow-hidden" style={{ height: viewportHeight }}>
       <WebSocketChatInterface currentUser={user} />
     </div>
   );
