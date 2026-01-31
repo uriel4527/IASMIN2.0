@@ -93,16 +93,34 @@ const Chat2 = () => {
     };
   }, [navigate]);
 
+  // Handle visual viewport for mobile keyboard
+  const [viewportHeight, setViewportHeight] = useState('100%');
+
+  useEffect(() => {
+    if (!window.visualViewport) return;
+
+    const handleResize = () => {
+      // Use visualViewport height to ensure keyboard doesn't cover content
+      setViewportHeight(`${window.visualViewport.height}px`);
+    };
+
+    window.visualViewport.addEventListener('resize', handleResize);
+    // Initial set
+    handleResize();
+
+    return () => window.visualViewport.removeEventListener('resize', handleResize);
+  }, []);
+
   if (!user) {
     return (
-      <div className="h-full flex items-center justify-center tech-pattern-bg overflow-hidden">
+      <div className="h-full flex items-center justify-center tech-pattern-bg overflow-hidden" style={{ height: viewportHeight }}>
         <SimpleLoginForm />
       </div>
     );
   }
 
   return (
-    <div className="h-full bg-background flex flex-col overflow-hidden">
+    <div className="bg-background flex flex-col overflow-hidden" style={{ height: viewportHeight }}>
       <WebSocketChatInterface currentUser={user} />
     </div>
   );
