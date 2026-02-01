@@ -1,8 +1,9 @@
 import React from 'react';
-import { detectUrls, getPlatformInfo, extractYouTubeVideoId, extractTikTokVideoId, isVideoUrl } from '@/utils/linkUtils';
+import { detectUrls, getPlatformInfo, extractYouTubeVideoId, extractTikTokVideoId, isTikTokUrl, extractInstagramId, isVideoUrl } from '@/utils/linkUtils';
 import { useNativeLinkHandler } from '@/hooks/useNativeLinkHandler';
 import { YouTubePlayer } from './YouTubePlayer';
 import { TikTokPlayer } from './TikTokPlayer';
+import { InstagramPlayer } from './InstagramPlayer';
 import { GenericVideoPlayer } from './GenericVideoPlayer';
 import { GoogleMapsPreview } from './GoogleMapsPreview';
 
@@ -38,6 +39,8 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, className })
     const linkInfo = getPlatformInfo(url);
     const youtubeId = extractYouTubeVideoId(url);
     const tiktokId = extractTikTokVideoId(url);
+    const isTikTok = isTikTokUrl(url);
+    const instagramId = extractInstagramId(url);
     const isVideo = isVideoUrl(url);
     const isGoogleMaps = url.includes('google.com/maps') || url.includes('maps.google.com') || url.includes('goo.gl/maps');
     
@@ -61,9 +64,13 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, className })
       elements.push(
         <YouTubePlayer key={`youtube-${index}`} videoId={youtubeId} />
       );
-    } else if (tiktokId) {
+    } else if (isTikTok) {
       elements.push(
-        <TikTokPlayer key={`tiktok-${index}`} videoId={tiktokId} />
+        <TikTokPlayer key={`tiktok-${index}`} videoId={tiktokId || ''} url={url} />
+      );
+    } else if (instagramId) {
+      elements.push(
+        <InstagramPlayer key={`instagram-${index}`} videoId={instagramId} />
       );
     } else if (isVideo) {
       elements.push(

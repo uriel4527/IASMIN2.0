@@ -260,8 +260,24 @@ export function extractYouTubeVideoId(url: string): string | null {
 }
 
 export function extractTikTokVideoId(url: string): string | null {
-  // Matches /video/1234567890 or /v/1234567890
-  const match = url.match(/tiktok\.com\/.*\/video\/(\d+)/);
+  // Matches /video/1234567890, /v/1234567890, or /embed/1234567890
+  const match = url.match(/tiktok\.com\/(?:.*\/video\/|v\/|embed\/)(\d+)/);
+  return match?.[1] || null;
+}
+
+export function isTikTokUrl(url: string): boolean {
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.toLowerCase();
+    return hostname.includes('tiktok.com') || hostname === 'vt.tiktok.com' || hostname === 'vm.tiktok.com';
+  } catch {
+    return false;
+  }
+}
+
+export function extractInstagramId(url: string): string | null {
+  // Matches /p/ID, /reel/ID, /tv/ID
+  const match = url.match(/instagram\.com\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/);
   return match?.[1] || null;
 }
 
