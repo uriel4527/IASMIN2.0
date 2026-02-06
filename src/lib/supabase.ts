@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Fallback credentials for when env vars are missing (e.g. Vercel deployment without env vars set)
+const FALLBACK_URL = 'https://uxcsfevgygrzrmxhenth.supabase.co';
+const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4Y3NmZXZneWdyenJteGhlbnRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwNDU4ODEsImV4cCI6MjA3NzYyMTg4MX0.pG3_eMj1ZhrAikrln9Phz_Y9fSat9bjFrdrf_T-UxNM';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || FALLBACK_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || FALLBACK_KEY;
 
 // Mock client para evitar crashes quando as variáveis de ambiente não estiverem configuradas
 const createMockClient = () => {
