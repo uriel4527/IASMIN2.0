@@ -23,7 +23,7 @@ export const PasswordModal: React.FC<PasswordModalProps> = ({
     
     if (value === '4527' && value.length === 4) {
       sessionStorage.setItem('chatAccess', 'granted');
-      navigate('/chat2');
+      navigate('/chat');
     } else if (value.length === 4) {
       onPasswordChange('');
       onClose();
