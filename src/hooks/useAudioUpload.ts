@@ -25,15 +25,15 @@ export const useAudioUpload = () => {
       // Try HTTPS first, then HTTP domain, then localhost
       let response;
       try {
-        console.log('🔄 Trying HTTPS upload (iasminn.duckdns.org)...');
-        response = await fetch('https://iasminn.duckdns.org/upload', {
+        console.log('🔄 Trying HTTPS upload (iasminnn.duckdns.org)...');
+        response = await fetch('https://iasminnn.duckdns.org/upload', {
           method: 'POST',
           body: formData
         });
       } catch (e) {
-        console.log('⚠️ HTTPS upload failed, trying HTTP (iasminn.duckdns.org)...', e);
+        console.log('⚠️ HTTPS upload failed, trying HTTP (iasminnn.duckdns.org)...', e);
         try {
-            response = await fetch('http://iasminn.duckdns.org/upload', {
+            response = await fetch('http://iasminnn.duckdns.org/upload', {
                 method: 'POST',
                 body: formData
             });

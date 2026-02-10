@@ -165,13 +165,13 @@ export const useVideoUpload = (userId: string): [VideoUploadState, VideoUploadAc
       let response;
       try {
         try {
-          response = await fetch('https://iasminn.duckdns.org/upload-chunk', {
+          response = await fetch('https://iasminnn.duckdns.org/upload-chunk', {
             method: 'POST',
             body: formData
           });
         } catch (e) {
           console.log('⚠️ HTTPS chunk upload failed, trying HTTP...', e);
-          response = await fetch('http://iasminn.duckdns.org/upload-chunk', {
+          response = await fetch('http://iasminnn.duckdns.org/upload-chunk', {
             method: 'POST',
             body: formData
           });

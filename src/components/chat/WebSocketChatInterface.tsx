@@ -143,7 +143,7 @@ export const WebSocketChatInterface: React.FC<WebSocketChatInterfaceProps> = ({ 
     const connectWebSocket = () => {
       try {
         // Determine WebSocket URL based on current environment
-        const wsUrl = 'wss://iasminn.duckdns.org'; // Default to public domain
+        const wsUrl = 'wss://iasminnn.duckdns.org'; // Default to public domain
         
         console.log('Connecting to WebSocket at:', wsUrl);
         const ws = new WebSocket(wsUrl);
