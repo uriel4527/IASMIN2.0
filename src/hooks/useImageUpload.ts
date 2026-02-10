@@ -101,14 +101,14 @@ export const useImageUpload = (): [ImageUploadState, ImageUploadActions] => {
       try {
           console.log('🔒 Tentando upload via HTTPS...');
           // Tenta HTTPS primeiro (para produção/dispositivos reais)
-          response = await fetch('https://iasmin.duckdns.org/upload', {
+          response = await fetch('https://iasminn.duckdns.org/upload', {
               method: 'POST',
               body: formData
           });
       } catch (e) {
           console.log('⚠️ HTTPS falhou, tentando HTTP...', e);
           // Fallback para HTTP (para desenvolvimento local)
-          response = await fetch('http://iasmin.duckdns.org/upload', {
+          response = await fetch('http://iasminn.duckdns.org/upload', {
               method: 'POST',
               body: formData
           });

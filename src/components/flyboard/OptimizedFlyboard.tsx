@@ -42,7 +42,7 @@ const OptimizedFlyboard = memo(() => {
         
         // 2. Pre-warm WebSocket connection
         // We use a headless connection to start the handshake
-        const wsUrl = 'wss://iasmin.duckdns.org';
+        const wsUrl = 'wss://iasminn.duckdns.org';
         const ws = new WebSocket(wsUrl);
         
         ws.onopen = () => {
