@@ -139,6 +139,8 @@ export const WebSocketChatInterface: React.FC<WebSocketChatInterfaceProps> = ({ 
   // WebSocket Connection
   useEffect(() => {
     if (!user) return;
+    
+    let connectionTimeout: NodeJS.Timeout;
 
     const connectWebSocket = () => {
       try {
@@ -147,9 +149,18 @@ export const WebSocketChatInterface: React.FC<WebSocketChatInterfaceProps> = ({ 
         
         console.log('Connecting to WebSocket at:', wsUrl);
         const ws = new WebSocket(wsUrl);
+
+        // Timeout para recarregar a página se não conectar em 1 segundo
+        connectionTimeout = setTimeout(() => {
+          if (ws.readyState !== WebSocket.OPEN) {
+            console.warn('WebSocket connection timed out (1s). Refreshing page...');
+            window.location.reload();
+          }
+        }, 1000);
         
         ws.onopen = () => {
           console.log('WebSocket Connected');
+          clearTimeout(connectionTimeout); // Cancel refresh if connected
           setIsConnected(true);
           setConnectionError(false);
           
